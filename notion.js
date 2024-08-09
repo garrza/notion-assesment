@@ -9,6 +9,11 @@ const notion = new Client({
 
 export async function sendMail(sender, recipient, message) {
   try {
+    console.log("Sending mail with the following details:");
+    console.log("Sender:", sender);
+    console.log("Recipient:", recipient);
+    console.log("Message:", message);
+
     await notion.pages.create({
       parent: { database_id: process.env.NOTION_PAGE_ID },
       properties: {
@@ -66,9 +71,11 @@ export async function readMail(recipient) {
 
     console.log(`Messages for user: ${recipient}`);
     for (const page of response.results) {
-      const title = page.properties.Title.title[0].text.content;
-      const sender = page.properties.Sender.rich_text[0].text.content;
-      console.log(`\nfrom: ${sender}\n${title}`);
+      const title = page.properties.Title.title[0]?.text?.content || "No Title";
+      const sender =
+        page.properties.Sender.rich_text[0]?.text?.content || "Unknown Sender";
+
+      console.log(`\nFrom: ${sender}\nTitle: ${title}`);
     }
   } catch (error) {
     console.error("Error reading messages:", error);

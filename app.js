@@ -1,9 +1,10 @@
 import { Command } from "commander";
-import { input } from "@inquirer/prompts";
+import { input, select, confirm } from "@inquirer/prompts";
 import chalk from "chalk";
 import chalkAnimation from "chalk-animation";
 import fs from "fs";
 import { sendMail, readMail } from "./notion.js";
+import inquirer from "inquirer";
 
 const program = new Command();
 
@@ -11,7 +12,7 @@ const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 
 async function welcomeUser() {
   const initialNotion = chalkAnimation.rainbow(
-    "Welcome to Notion Mail implementation by @garrza"
+    "Welcome to NotionMail implementation by @garrza"
   );
 
   await sleep();
@@ -49,13 +50,16 @@ Each time you send a mail, it is added to our Notion DB.
   console.log(chalk.bgRed.black(" ADDITIONAL FEATURES:"));
   console.log(`
     ${chalk.red("📧 SEND")}:
-        - Available AI generated mailing based on prompts as well as choose templates
+        - AI-generated mailing based on prompts or templates:
                 - Professional
                 - Casual
                 - Formal
     ${chalk.red("📬 READ")}:
-        - Messages are sorted by priority
-        - AI mail summarization offers quick view of all available messages
+        - Messages sorted by priority
+        - AI summarization for a quick overview of messages
+    ${chalk.red("🔧 GENERAL:")}:
+        - Testing suite that tests the program correctness
+        - Timestamps to each of the messages
   `);
 
   console.log(
@@ -65,37 +69,86 @@ Each time you send a mail, it is added to our Notion DB.
   );
 }
 
+async function handleSendMail() {
+  const { sender } = await input({
+    message: "Sender: ",
+  });
+
+  const { recipient } = await input({
+    message: "Recipient: ",
+  });
+
+  const { message } = await input({
+    message: "Message: ",
+  });
+
+  try {
+    await sendMail(sender, recipient, message);
+    console.log(chalk.green("Mail sent successfully!"));
+  } catch (error) {
+    console.error(chalk.red("Failed to send mail:"), error);
+  }
+}
+
+// Function to handle reading mail
+async function handleReadMail() {
+  const { recipient } = await input({
+    message: "User: ",
+  });
+
+  try {
+    const mails = await readMail(recipient);
+    console.log(chalk.blue(`\nMails for ${recipient}:\n`));
+    mails.forEach((mail, index) => {
+      console.log(`${chalk.bold(`#${index + 1}`)} - ${chalk.yellow(mail)}`);
+    });
+  } catch (error) {
+    console.error(chalk.red("Failed to read mail:"), error);
+  }
+}
+
+// Main logic for handling user choices
+async function askOption() {
+  const choice = await select({
+    message: `${chalk.blue("✉️ SELECT AN OPTION ✉️")}`,
+    choices: [
+      {
+        name: "📧 SEND",
+        value: "send",
+        description: "Send mail to a user",
+      },
+      {
+        name: "📬 READ",
+        value: "read",
+        description: "Check a user's mail (only possible if user exists)",
+      },
+      {
+        name: "❌ EXIT",
+        value: "exit",
+        description: "Exit NotionMail",
+      },
+    ],
+  });
+
+  switch (choice) {
+    case "send":
+      await handleSendMail();
+      break;
+    case "read":
+      await handleReadMail();
+      break;
+    case "exit":
+      console.log(chalk.yellow("Exiting NotionMail..."));
+      process.exit(0);
+      break;
+    default:
+      console.log(chalk.red("Invalid option, please try again."));
+  }
+
+  // Re-run the menu after an action is completed
+  await askOption();
+}
+
+// Start the application
 await welcomeUser();
-
-// program
-//   .version("1.0.0")
-//   .description("NotionMail - A simple mail app powered by Notion");
-
-// program
-//   .command("send")
-//   .description("Send mail to a user")
-//   .action(async () => {
-//     const { sender, recipient, message } = await input([
-//       { name: "sender", message: "Sender: " },
-//       { name: "recipient", message: "Recipient: " },
-//       { name: "message", message: "Message: " },
-//     ]);
-//     await sendMail(sender, recipient, message);
-//   });
-
-// program
-//   .command("read")
-//   .description("Check a user's mail")
-//   .action(async () => {
-//     const { recipient } = await input([
-//       { name: "recipient", message: "User: " },
-//     ]);
-//     await readMail(recipient);
-//   });
-
-// // If no command is provided, show help
-// if (!process.argv.slice(2).length) {
-//   program.outputHelp();
-// }
-
-// program.parse(process.argv);
+await askOption();
