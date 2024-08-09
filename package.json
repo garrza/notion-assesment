@@ -2,9 +2,22 @@
   "dependencies": {
     "@inquirer/prompts": "^5.3.8",
     "@notionhq/client": "^2.2.15",
+    "chalk": "^5.3.0",
+    "chalk-animation": "^2.0.3",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "inquirer": "^10.1.8"
-  }
+  },
+  "name": "notion-assesment",
+  "version": "1.0.0",
+  "description": "Simple mail app supported by Notion as a command line interface (CLI).",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

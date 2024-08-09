@@ -1,18 +1,44 @@
-const { Client } = require("@notionhq/client");
-require("dotenv").config();
+import dotenv from "dotenv";
+import { Client } from "@notionhq/client";
+
+dotenv.config();
 
 const notion = new Client({
-  auth: process.env.NOTION_API_KEY,
+  auth: process.env.NOTION_KEY,
 });
 
-async function sendMail(sender, recipient, message) {
+export async function sendMail(sender, recipient, message) {
   try {
     await notion.pages.create({
-      parent: { database_id: process.env.NOTION_DATABASE_ID },
+      parent: { database_id: process.env.NOTION_PAGE_ID },
       properties: {
-        Sender: { title: [{ text: { content: sender } }] },
-        Recipient: { title: [{ text: { content: recipient } }] },
-        Message: { rich_text: [{ text: { content: message } }] },
+        Title: {
+          title: [
+            {
+              text: {
+                content: message,
+              },
+            },
+          ],
+        },
+        Sender: {
+          rich_text: [
+            {
+              text: {
+                content: sender,
+              },
+            },
+          ],
+        },
+        Recipient: {
+          rich_text: [
+            {
+              text: {
+                content: recipient,
+              },
+            },
+          ],
+        },
       },
     });
     console.log("Message sent successfully!");
@@ -21,33 +47,30 @@ async function sendMail(sender, recipient, message) {
   }
 }
 
-async function readMail(recipient) {
+export async function readMail(recipient) {
   try {
-    const { results } = await notion.databases.query({
-      database_id: process.env.NOTION_DATABASE_ID,
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_PAGE_ID,
       filter: {
         property: "Recipient",
-        title: { equals: recipient },
+        rich_text: {
+          contains: recipient,
+        },
       },
     });
 
-    if (results.length() == 0) {
+    if (response.results.length === 0) {
       console.log(`No messages found for user: ${recipient}`);
       return;
     }
 
-    console.log(`Messages (${results.length}):\n`);
-    for (const page of results) {
-      const sender = page.properties.Sender.title[0].text.content;
-      const message = page.properties.Message.rich_text[0].text.content;
-      console.log(`from: ${sender}\n${message}\n`);
+    console.log(`Messages for user: ${recipient}`);
+    for (const page of response.results) {
+      const title = page.properties.Title.title[0].text.content;
+      const sender = page.properties.Sender.rich_text[0].text.content;
+      console.log(`\nfrom: ${sender}\n${title}`);
     }
   } catch (error) {
     console.error("Error reading messages:", error);
   }
 }
-
-module.exports = {
-  sendMail,
-  readMail,
-};
