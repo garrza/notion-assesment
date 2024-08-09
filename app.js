@@ -23,7 +23,7 @@ async function welcomeUser() {
   try {
     // ASCII Art display
     const art = fs.readFileSync("notion_ascii.txt", "utf8");
-    const artAnimation = chalkAnimation.karaoke(art);
+    const artAnimation = chalkAnimation.rainbow(art);
 
     await sleep(3000);
     artAnimation.stop();
@@ -70,19 +70,20 @@ Each time you send a mail, it is added to our Notion DB.
 }
 
 async function handleSendMail() {
-  const { sender } = await input({
+  const sender = await input({
     message: "Sender: ",
   });
 
-  const { recipient } = await input({
+  const recipient = await input({
     message: "Recipient: ",
   });
 
-  const { message } = await input({
+  const message = await input({
     message: "Message: ",
   });
 
   try {
+    console.log(sender);
     await sendMail(sender, recipient, message);
     console.log(chalk.green("Mail sent successfully!"));
   } catch (error) {

@@ -17,9 +17,10 @@ export async function sendMail(sender, recipient, message) {
     await notion.pages.create({
       parent: { database_id: process.env.NOTION_PAGE_ID },
       properties: {
-        Title: {
+        Message: {
           title: [
             {
+              type: "text",
               text: {
                 content: message,
               },
@@ -29,6 +30,7 @@ export async function sendMail(sender, recipient, message) {
         Sender: {
           rich_text: [
             {
+              type: "text",
               text: {
                 content: sender,
               },
@@ -38,6 +40,7 @@ export async function sendMail(sender, recipient, message) {
         Recipient: {
           rich_text: [
             {
+              type: "text",
               text: {
                 content: recipient,
               },
