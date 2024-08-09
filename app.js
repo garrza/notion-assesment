@@ -4,9 +4,6 @@ import chalk from "chalk";
 import chalkAnimation from "chalk-animation";
 import fs from "fs";
 import { sendMail, readMail } from "./notion.js";
-import inquirer from "inquirer";
-
-const program = new Command();
 
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 
@@ -21,7 +18,6 @@ async function welcomeUser() {
   console.clear();
 
   try {
-    // ASCII Art display
     const art = fs.readFileSync("notion_ascii.txt", "utf8");
     const artAnimation = chalkAnimation.rainbow(art);
 
@@ -93,15 +89,24 @@ async function handleSendMail() {
 
 // Function to handle reading mail
 async function handleReadMail() {
-  const { recipient } = await input({
+  const recipient = await input({
     message: "User: ",
   });
 
   try {
     const mails = await readMail(recipient);
+    if (mails.length === 0) {
+      console.log(chalk.blue(`No mails found for ${recipient}.`));
+      return;
+    }
+
     console.log(chalk.blue(`\nMails for ${recipient}:\n`));
     mails.forEach((mail, index) => {
-      console.log(`${chalk.bold(`#${index + 1}`)} - ${chalk.yellow(mail)}`);
+      console.log(
+        `${chalk.bold(`#${index + 1}`)} - From: ${chalk.yellow(
+          mail.sender
+        )}\nMessage: ${chalk.yellow(mail.title)}\n`
+      );
     });
   } catch (error) {
     console.error(chalk.red("Failed to read mail:"), error);
@@ -146,10 +151,8 @@ async function askOption() {
       console.log(chalk.red("Invalid option, please try again."));
   }
 
-  // Re-run the menu after an action is completed
   await askOption();
 }
 
-// Start the application
 await welcomeUser();
 await askOption();

@@ -67,20 +67,25 @@ export async function readMail(recipient) {
       },
     });
 
-    if (response.results.length === 0) {
+    if (!response || !response.results || response.results.length === 0) {
       console.log(`No messages found for user: ${recipient}`);
-      return;
+      return [];
     }
 
-    console.log(`Messages for user: ${recipient}`);
-    for (const page of response.results) {
-      const title = page.properties.Title.title[0]?.text?.content || "No Title";
+    const mails = response.results.map((page) => {
+      const title =
+        page.properties.Message?.title?.[0]?.text?.content ||
+        "No Message Title";
       const sender =
-        page.properties.Sender.rich_text[0]?.text?.content || "Unknown Sender";
+        page.properties.Sender?.rich_text?.[0]?.text?.content ||
+        "Unknown Sender";
 
-      console.log(`\nFrom: ${sender}\nTitle: ${title}`);
-    }
+      return { title, sender };
+    });
+
+    return mails;
   } catch (error) {
     console.error("Error reading messages:", error);
+    return [];
   }
 }
