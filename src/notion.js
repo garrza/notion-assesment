@@ -82,7 +82,6 @@ export async function sendMail(sender, recipient, message) {
         },
       },
     });
-    console.log("Message sent successfully!");
   } catch (error) {
     console.error("Error sending message:", error);
   }
