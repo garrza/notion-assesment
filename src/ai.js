@@ -7,7 +7,7 @@ const openai = new OpenAI({
 export async function generateMail(prompt, tone) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -15,7 +15,7 @@ export async function generateMail(prompt, tone) {
         },
         {
           role: "user",
-          content: `Write an email for the following: ${prompt}`,
+          content: `Write a message for the following: ${prompt}`,
         },
       ],
       max_tokens: 150,

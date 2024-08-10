@@ -1,10 +1,9 @@
 import { input, select, confirm } from "@inquirer/prompts";
 import chalk from "chalk";
 import chalkAnimation from "chalk-animation";
-import { format } from "date-fns";
 import fs from "fs";
-import { sendMail, readMail, getAvailableUsers } from "./notion.js";
-import { generateMail, determinePriority, summarizeMails } from "./ai.js";
+import { sendMail, readMail, getAvailableUsers } from "./src/notion.js";
+import { generateMail, determinePriority, summarizeMails } from "./src/ai.js";
 
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 
