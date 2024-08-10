@@ -7,12 +7,40 @@ const notion = new Client({
   auth: process.env.NOTION_KEY,
 });
 
+export async function getAvailableUsers() {
+  try {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_PAGE_ID,
+      filter: {
+        property: "Recipient",
+        rich_text: {
+          is_not_empty: true,
+        },
+      },
+    });
+
+    const users = response.results
+      .map((page) => page.properties.Recipient?.rich_text?.[0]?.text?.content)
+      .filter(
+        (recipient, index, self) =>
+          recipient && self.indexOf(recipient) === index
+      );
+
+    return users;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return [];
+  }
+}
+
 export async function sendMail(sender, recipient, message) {
   try {
     console.log("Sending mail with the following details:");
     console.log("Sender:", sender);
     console.log("Recipient:", recipient);
     console.log("Message:", message);
+
+    const currentDate = new Date().toISOString(); // Get current date in ISO format
 
     await notion.pages.create({
       parent: { database_id: process.env.NOTION_PAGE_ID },
@@ -47,6 +75,11 @@ export async function sendMail(sender, recipient, message) {
             },
           ],
         },
+        Date: {
+          date: {
+            start: currentDate,
+          },
+        },
       },
     });
     console.log("Message sent successfully!");
@@ -79,8 +112,9 @@ export async function readMail(recipient) {
       const sender =
         page.properties.Sender?.rich_text?.[0]?.text?.content ||
         "Unknown Sender";
+      const date = page.properties.Date?.date?.start || "No Date Provided";
 
-      return { title, sender };
+      return { title, sender, date };
     });
 
     return mails;

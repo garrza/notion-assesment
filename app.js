@@ -1,9 +1,10 @@
-import { Command } from "commander";
 import { input, select, confirm } from "@inquirer/prompts";
 import chalk from "chalk";
 import chalkAnimation from "chalk-animation";
+import { format } from "date-fns";
 import fs from "fs";
-import { sendMail, readMail } from "./notion.js";
+import { sendMail, readMail, getAvailableUsers } from "./notion.js";
+import { generateMail, determinePriority, summarizeMails } from "./ai.js";
 
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 
@@ -66,6 +67,33 @@ Each time you send a mail, it is added to our Notion DB.
 }
 
 async function handleSendMail() {
+  const useAI = await confirm({
+    message: "Would you like to generate the message using AI?",
+  });
+
+  let message;
+  if (useAI) {
+    const tone = await select({
+      message: "Select the tone for your AI-generated mail:",
+      choices: [
+        { name: "Professional", value: "Professional" },
+        { name: "Casual", value: "Casual" },
+        { name: "Formal", value: "Formal" },
+      ],
+    });
+
+    const prompt = await input({
+      message: "What should the email be about?",
+    });
+
+    message = await generateMail(prompt, tone);
+    console.log(chalk.green("AI-generated message:\n"), message);
+  } else {
+    message = await input({
+      message: "Message: ",
+    });
+  }
+
   const sender = await input({
     message: "Sender: ",
   });
@@ -74,12 +102,7 @@ async function handleSendMail() {
     message: "Recipient: ",
   });
 
-  const message = await input({
-    message: "Message: ",
-  });
-
   try {
-    console.log(sender);
     await sendMail(sender, recipient, message);
     console.log(chalk.green("Mail sent successfully!"));
   } catch (error) {
@@ -87,25 +110,59 @@ async function handleSendMail() {
   }
 }
 
-// Function to handle reading mail
 async function handleReadMail() {
-  const recipient = await input({
-    message: "User: ",
-  });
-
   try {
+    // Get the list of users
+    const users = await getAvailableUsers();
+
+    if (users.length === 0) {
+      console.log(chalk.red("No users found."));
+      return;
+    }
+
+    const recipient = await select({
+      message: "Select a user:",
+      choices: users.map((user) => ({ name: user, value: user })),
+    });
+
     const mails = await readMail(recipient);
     if (mails.length === 0) {
       console.log(chalk.blue(`No mails found for ${recipient}.`));
       return;
     }
 
+    const sortByPriority = await confirm({
+      message: "Sort messages by AI-determined priority?",
+    });
+
+    if (sortByPriority) {
+      for (let mail of mails) {
+        mail.priority = await determinePriority(mail.title);
+      }
+
+      mails.sort((a, b) => {
+        const priorities = { High: 1, Medium: 2, Low: 3 };
+        return priorities[a.priority] - priorities[b.priority];
+      });
+    }
+
+    const summarize = await confirm({
+      message: "Would you like an AI summary of the messages?",
+    });
+
+    if (summarize) {
+      const summary = await summarizeMails(mails);
+      console.log(chalk.yellow("\nAI Summary of Mails:\n"), summary);
+    }
+
     console.log(chalk.blue(`\nMails for ${recipient}:\n`));
     mails.forEach((mail, index) => {
+      const formattedDate = format(new Date(mail.date), "PPP p");
       console.log(
-        `${chalk.bold(`#${index + 1}`)} - From: ${chalk.yellow(
-          mail.sender
-        )}\nMessage: ${chalk.yellow(mail.title)}\n`
+        `${chalk.bold(`#${index + 1}`)} - From: ${chalk.yellow(mail.sender)}
+  Priority: ${chalk.red(mail.priority || "N/A")}
+  Message: ${chalk.yellow(mail.title)}
+  Date: ${chalk.green(formattedDate)}\n`
       );
     });
   } catch (error) {
@@ -113,7 +170,6 @@ async function handleReadMail() {
   }
 }
 
-// Main logic for handling user choices
 async function askOption() {
   const choice = await select({
     message: `${chalk.blue("✉️ SELECT AN OPTION ✉️")}`,
