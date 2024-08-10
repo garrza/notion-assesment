@@ -7,7 +7,7 @@
     "inquirer": "^10.1.8"
   },
   "name": "notion-assesment",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple mail app supported by Notion as a command line interface (CLI).",
   "main": "app.js",
   "type": "module",
@@ -15,7 +15,9 @@
     "test": "jest",
     "app": "node app.js"
   },
-  "bin": "app.js",
+  "bin": {
+  "notionmail": "./app.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { input, select, confirm } from "@inquirer/prompts";
 import chalk from "chalk";
 import chalkAnimation from "chalk-animation";
@@ -18,7 +20,7 @@ async function welcomeUser() {
   console.clear();
 
   try {
-    const art = fs.readFileSync("notion_ascii.txt", "utf8");
+    const art = fs.readFileSync("src/assets/notion_ascii.txt", "utf8");
     const artAnimation = chalkAnimation.rainbow(art);
 
     await sleep(3000);
@@ -54,7 +56,6 @@ Each time you send a mail, it is added to our Notion DB.
         - Messages sorted by priority
         - AI summarization for a quick overview of messages
     ${chalk.red("🔧 GENERAL:")}:
-        - Testing suite that tests the program correctness
         - Timestamps to each of the messages
   `);
 
