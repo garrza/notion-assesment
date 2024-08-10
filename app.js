@@ -112,7 +112,6 @@ async function handleSendMail() {
 
 async function handleReadMail() {
   try {
-    // Get the list of users
     const users = await getAvailableUsers();
 
     if (users.length === 0) {
@@ -152,19 +151,21 @@ async function handleReadMail() {
 
     if (summarize) {
       const summary = await summarizeMails(mails);
-      console.log(chalk.yellow("\nAI Summary of Mails:\n"), summary);
+      console.log(chalk.yellow("\nAI Summary of Mails:"));
+      console.log(chalk.white(summary));
+    } else {
+      console.log(chalk.blue(`\nMails for ${recipient}:\n`));
+      mails.forEach((mail, index) => {
+        const date = new Date(mail.date);
+        const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        console.log(
+          `${chalk.bold(`#${index + 1}`)} - From: ${chalk.yellow(mail.sender)}
+    Priority: ${chalk.red(mail.priority || "N/A")}
+    Message: ${chalk.yellow(mail.title)}
+    Date: ${chalk.green(formattedDate)}\n`
+        );
+      });
     }
-
-    console.log(chalk.blue(`\nMails for ${recipient}:\n`));
-    mails.forEach((mail, index) => {
-      const formattedDate = format(new Date(mail.date), "PPP p");
-      console.log(
-        `${chalk.bold(`#${index + 1}`)} - From: ${chalk.yellow(mail.sender)}
-  Priority: ${chalk.red(mail.priority || "N/A")}
-  Message: ${chalk.yellow(mail.title)}
-  Date: ${chalk.green(formattedDate)}\n`
-      );
-    });
   } catch (error) {
     console.error(chalk.red("Failed to read mail:"), error);
   }
