@@ -65,7 +65,11 @@ NotionMail is a command-line interface (CLI) tool designed to emulate the readin
 
 ## References
 
+- [Fireship NodeJS CLI App Project](https://www.youtube.com/watch?v=_oHByo8tiEY)
+- [Chalk Animation](https://github.com/bokub/chalk-animation)
 - [Notion API Documentation](https://developers.notion.com/docs)
+- [Notion API - Working with databases](https://developers.notion.com/docs/working-with-databases#adding-pages-to-a-database)
+- [Notion API - Property values](https://developers.notion.com/reference/property-value-object#title-property-values)
 - [Node.js CLI Best Practices](https://github.com/yargs/yargs)
 - [OpenAI API Documentation](https://beta.openai.com/docs/)
 
@@ -75,7 +79,8 @@ NotionMail is a command-line interface (CLI) tool designed to emulate the readin
 2. **Enhanced AI Features:** Further refine AI-generated messages by adding more customizable tones or templates.
 3. **Custom Notion Views:** Allow users to interact with different views or filters in the Notion database, providing more flexibility in how messages are displayed.
 4. **Multi-Language Support:** Expand the program to support multiple languages for both the user interface and AI-generated content.
-5. **Scalability Support:**: Modify the program to be able to handle a larger number of mails and users. Optimize UI for reading a users mail, view caching options to reduce queries to the database and optimize performance.
+5. **Scalability Support:**: Modify the program to handle a larger number of mails and users. Optimize the UI for reading user mail, implement view caching options to reduce queries to the database, and enhance performance.
+6. **Testing Coverage and CI/CD Pipelines:** Develop a comprehensive suite of tests to ensure program correctness and integrate automated tests for continuous integration and deployment.
 
 ## Product and Technical Choices
 
